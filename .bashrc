@@ -15,7 +15,7 @@ bind -x '"\C-l":clear'
 export VISUAL=nvim      # Preferred visual editor
 export EDITOR="$VISUAL" # Default text editor
 
-export BROWSER="google" # Default web browser
+export BROWSER="firefox" # Default web browser
 
 export REPOS="$HOME/Repos" # Shortcut to Repos directory
 export DOCUMENTS="$HOME/Documents/"
@@ -50,32 +50,31 @@ export HISTCONTROL=ignorespace # Ignore commands that start with a space
 # ~~~~~~~~~~~~~~~ Tmux ~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Check if tmux is available and not in a tmux session
-if command -v tmux &> /dev/null && [ -z "$TMUX" ]; then
-  # Attach to "base" session or create it and source config if it doesn't exist
-  tmux attach-session -t base 2>/dev/null || { \
-    tmux new-session -s base -d && \
-    tmux source-file "${DOTFILES}.tmux.conf" && \
-    tmux attach-session -t base; \
-  } 2>/dev/null
+if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
+	# Attach to "base" session or create it and source config if it doesn't exist
+	tmux attach-session -t base 2>/dev/null || {
+		tmux new-session -s base -d &&
+			tmux source-file "${DOTFILES}.tmux.conf" &&
+			tmux attach-session -t base
+	} 2>/dev/null
 fi
-
 
 # ~~~~~~~~~~~~~~~ SSH ~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Start ssh-agent if not running
 if ! pgrep -qf ssh-agent; then
-    eval "$(ssh-agent -s)" >/dev/null
+	eval "$(ssh-agent -s)" >/dev/null
 fi
 
 # Automatically add SSH keys from ~/.ssh, excluding public keys (*.pub) and config files
 for KEY in ~/.ssh/*; do
-    if [[ -f "$KEY" && ! "$KEY" =~ \.pub$ && "$KEY" != *"config"* ]]; then
-        # Check if the key is already added
-        FINGERPRINT=$(ssh-keygen -lf "$KEY" | awk '{print $2}')
-        if ! ssh-add -l | grep -q "$FINGERPRINT"; then
-            ssh-add --apple-use-keychain "$KEY" >/dev/null 2>&1
-        fi
-    fi
+	if [[ -f "$KEY" && ! "$KEY" =~ \.pub$ && "$KEY" != *"config"* ]]; then
+		# Check if the key is already added
+		FINGERPRINT=$(ssh-keygen -lf "$KEY" | awk '{print $2}')
+		if ! ssh-add -l | grep -q "$FINGERPRINT"; then
+			ssh-add --apple-use-keychain "$KEY" >/dev/null 2>&1
+		fi
+	fi
 done
 
 # ~~~~~~~~~~~~~~~ Starship prompt ~~~~~~~~~~~~~~~~~~~~~~~~
