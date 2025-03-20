@@ -166,6 +166,7 @@ alias vf='v $(fp)'
 alias pc='pass show -c'
 
 alias ax='code ~/Repos/github.com/xssns/axioma/'
+alias ztl-cli='cd ~/.local/pipx/venvs/zettelkasten-cli/lib/python3.12/site-packages/zettelkasten_cli'
 
 
 # ~~~~~~~~~~~~~~~ Zoxide ~~~~~~~~~~~~~~~~~~~~~~~~
