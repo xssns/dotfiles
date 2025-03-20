@@ -39,3 +39,34 @@ vim.api.nvim_create_user_command("CreateAndOpenZkNote", create_and_open_zk_note,
 
 -- Optional: Add a key mapping
 vim.keymap.set("n", "<leader>zn", ":CreateAndOpenZkNote<CR>", { desc = "Create and open zk note" })
+
+local function yank_and_search_markdown_link()
+  vim.cmd("normal! yi]")
+  local yanked_text = vim.fn.getreg('"')
+
+  -- Remove the brackets if they were captured
+  yanked_text = yanked_text:gsub("%[%[(.-)%]%]", "%1")
+
+  if yanked_text ~= "" then
+    -- Escape special characters for find_files
+    yanked_text = vim.fn.escape(yanked_text, "\\.")
+
+    require("telescope.builtin").find_files({
+      search_file = yanked_text,
+      hidden = true,
+      no_ignore = true,
+      follow = true,
+    })
+  else
+    print("No text found inside brackets")
+  end
+end
+
+vim.api.nvim_create_user_command("YankAndSearchMarkdownLink", yank_and_search_markdown_link, {})
+
+vim.keymap.set(
+  "n",
+  "<leader>zo",
+  ":YankAndSearchMarkdownLink<CR>",
+  { desc = "Zet Open - Yank and search markdown link" }
+)

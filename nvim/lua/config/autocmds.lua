@@ -74,3 +74,52 @@ vim.api.nvim_create_autocmd("filetype", {
   pattern = { "go" },
   command = 'lua require("cmp").setup { enabled = true }',
 })
+
+-- Disable auto formatting and markdown rendering on the Index
+-- Also conceals brackets on the Index for cleaner consistent formatting
+
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "00.00 Index.md",
+  callback = function()
+    if vim.bo.filetype == "markdown" then
+      vim.cmd("RenderMarkdown disable")
+      vim.cmd("LspStop")
+      vim.b.autoformat = false
+
+      vim.o.conceallevel = 2
+      vim.o.concealcursor = "nvic"
+
+      -- Conceal the opening [[ and closing ]] brackets, but show the text inside
+      vim.fn.matchadd("Conceal", "\\[\\[", 10, -1, { conceal = "" })
+      vim.fn.matchadd("Conceal", "\\]\\]", 10, -1, { conceal = "" })
+
+      -- Optionally, define a syntax for the content inside [[ ]] to ensure it’s not concealed
+      vim.cmd([[syntax region WikiLink start=/\[\[/ end=/\]\]/ concealends]])
+    end
+  end,
+})
+
+-- Ignore Non existent & Ambigious link warnings in Marksman
+
+vim.api.nvim_create_autocmd("LspAttach", {
+  pattern = "00.00 Index.md",
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client.name == "marksman" then
+      -- Override the diagnostic handler to filter out unwanted messages
+      client.handlers["textDocument/publishDiagnostics"] = function(_, result, ctx, config)
+        -- Filter diagnostics
+        local filtered_diagnostics = {}
+        for _, diagnostic in ipairs(result.diagnostics) do
+          local message = diagnostic.message
+          if not (message:match("Link to non%-existent document") or message:match("Ambiguous link to document")) then
+            table.insert(filtered_diagnostics, diagnostic)
+          end
+        end
+        result.diagnostics = filtered_diagnostics
+        -- Call the default handler with filtered diagnostics
+        vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, config)
+      end
+    end
+  end,
+})
