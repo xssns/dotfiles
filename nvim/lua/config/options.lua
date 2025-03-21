@@ -42,3 +42,4 @@ opt.scrolloff = 8
 vim.g.lazygit_config = false
 
 vim.g.snacks_animate = false
+vim.opt.clipboard = "unnamed,unnamedplus"
